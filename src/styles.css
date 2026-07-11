@@ -50,8 +50,9 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 .layer-tabs button.active::after { transform: scaleX(1); }
 
 .map-section { position: relative; height: calc(100dvh - 475px); min-height: 440px; margin-top: 0; background: #d9edf7; border-radius: 14px 14px 0 0; overflow: hidden; }
-.map-canvas-wrap, .google-map, .map-demo { position: absolute; inset: 0; }
-.google-map { z-index: 1; }
+.map-canvas-wrap, .leaflet-map, .map-demo { position: absolute; inset: 0; }
+.leaflet-map { z-index: 1; background: #d9edf7; }
+.leaflet-control-attribution { font-family: 'DM Sans', sans-serif; font-size: 10px; background: rgba(255,255,255,.74) !important; }
 .map-demo { z-index: 0; overflow: hidden; background: linear-gradient(135deg, #d9edf7 0%, #d7edf1 50%, #e4f1df 100%); }
 .map-demo-content { position: absolute; inset: 0; transform-origin: 50% 50%; transition: transform .35s ease-out; }
 .map-demo::before, .map-demo::after { content: ''; position: absolute; border-radius: 45%; background: #d1e7c8; filter: blur(1px); }
