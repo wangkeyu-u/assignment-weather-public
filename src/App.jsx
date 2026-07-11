@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import GoogleWeatherMap from './GoogleWeatherMap';
+import OpenStreetWeatherMap from './OpenStreetWeatherMap';
 import { useButtonSound } from './useButtonSound';
 
 const layers = ['Radar', 'Satellite', 'Wind', 'Rainfall'];
@@ -216,7 +216,7 @@ export default function App() {
       </header>
 
       <section className="map-section">
-        <GoogleWeatherMap ref={mapRef} layer={activeLayer} severity={weatherSeverity} />
+        <OpenStreetWeatherMap ref={mapRef} layer={activeLayer} severity={weatherSeverity} />
         <button className="place-chip" aria-busy={isLocating} onClick={locateUser}>
           <Icon name="locate" /><span>{isLocating ? 'Locating…' : <>Sunway,<br/>Selangor</>}</span>
         </button>
