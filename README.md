@@ -2,15 +2,26 @@
 
 A mobile-first React weather map inspired by the supplied design reference. It includes Google Maps integration, weather-layer controls, location and zoom actions, a rain-intensity legend, an animated timeline, bottom navigation, and subtle Web Audio API button sounds.
 
+## Open the website
+
+After the GitHub Pages workflow has completed, the website is available at:
+
+```text
+https://wangkeyu-u.github.io/assignment-weather-public/
+```
+
+No installation or API key is required to view the interface. Without a valid Google Maps API key, the application displays a functional styled map preview.
+
 ## Run locally
 
 ```bash
 npm install
-cp .env.example .env
 npm run dev
 ```
 
 Open the local address printed by Vite, usually `http://localhost:5173`.
+
+The `.env` file is optional. It is only required when using a live Google Map.
 
 ## Configure Google Maps
 
@@ -23,6 +34,12 @@ VITE_GOOGLE_MAPS_API_KEY=AIza...
 ```
 
 Restart the development server after changing `.env`.
+
+On Windows, create the file with:
+
+```bat
+copy .env.example .env
+```
 
 The key is intentionally excluded from Git through `.gitignore`. When no key is present, or its format is invalid, the UI keeps working with a styled map preview and an English status message.
 
