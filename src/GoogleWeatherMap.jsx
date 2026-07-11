@@ -36,20 +36,52 @@ function loadGoogleMaps(apiKey) {
   return googleMapsPromise;
 }
 
-const GoogleWeatherMap = forwardRef(function GoogleWeatherMap({ layer }, ref) {
+const GoogleWeatherMap = forwardRef(function GoogleWeatherMap({ layer, severity }, ref) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+  const latestLayerRef = useRef(layer);
   const [status, setStatus] = useState('loading');
+  const [previewZoom, setPreviewZoom] = useState(1);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   useImperativeHandle(ref, () => ({
-    zoomIn: () => mapRef.current?.setZoom((mapRef.current.getZoom() ?? 13) + 1),
-    zoomOut: () => mapRef.current?.setZoom((mapRef.current.getZoom() ?? 13) - 1),
-    recenter: () => {
-      mapRef.current?.panTo(SUNWAY);
-      mapRef.current?.setZoom(14);
+    zoomIn: () => {
+      if (mapRef.current) mapRef.current.setZoom((mapRef.current.getZoom() ?? 13) + 1);
+      else setPreviewZoom((value) => Math.min(1.5, value + 0.12));
     },
+    zoomOut: () => {
+      if (mapRef.current) mapRef.current.setZoom((mapRef.current.getZoom() ?? 13) - 1);
+      else setPreviewZoom((value) => Math.max(0.8, value - 0.12));
+    },
+    recenter: () => {
+      if (mapRef.current) {
+        mapRef.current.panTo(SUNWAY);
+        mapRef.current.setZoom(14);
+        markerRef.current?.setPosition(SUNWAY);
+      }
+      setPreviewZoom(1);
+    },
+    locateUser: () => new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          const position = { lat: coords.latitude, lng: coords.longitude };
+          if (mapRef.current) {
+            mapRef.current.panTo(position);
+            mapRef.current.setZoom(14);
+            markerRef.current?.setPosition(position);
+          }
+          setPreviewZoom(1.15);
+          resolve(position);
+        },
+        reject,
+        { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 },
+      );
+    }),
   }));
 
   useEffect(() => {
@@ -72,8 +104,8 @@ const GoogleWeatherMap = forwardRef(function GoogleWeatherMap({ layer }, ref) {
           zoom: 14,
           disableDefaultUI: true,
           gestureHandling: 'greedy',
-          mapTypeId: layer === 'Satellite' ? 'satellite' : 'roadmap',
-          styles: layer === 'Satellite' ? null : MAP_STYLES,
+          mapTypeId: latestLayerRef.current === 'Satellite' ? 'satellite' : 'roadmap',
+          styles: latestLayerRef.current === 'Satellite' ? null : MAP_STYLES,
         });
 
         markerRef.current = new maps.Marker({
@@ -97,6 +129,7 @@ const GoogleWeatherMap = forwardRef(function GoogleWeatherMap({ layer }, ref) {
   }, []);
 
   useEffect(() => {
+    latestLayerRef.current = layer;
     if (!mapRef.current) return;
     mapRef.current.setMapTypeId(layer === 'Satellite' ? 'satellite' : 'roadmap');
     mapRef.current.setOptions({ styles: layer === 'Satellite' ? null : MAP_STYLES });
@@ -107,12 +140,14 @@ const GoogleWeatherMap = forwardRef(function GoogleWeatherMap({ layer }, ref) {
       <div ref={containerRef} className="google-map" aria-label="Google map centered on Sunway, Selangor" />
       {status !== 'ready' && (
         <div className="map-demo" aria-label="Map preview">
-          <div className="map-road road-one" />
-          <div className="map-road road-two" />
-          <div className="map-road road-three" />
-          <div className="map-water" />
-          <span className="map-label label-one">Petaling Jaya</span>
-          <span className="map-label label-two">Bandar Sunway</span>
+          <div className="map-demo-content" style={{ transform: `scale(${previewZoom})` }}>
+            <div className="map-road road-one" />
+            <div className="map-road road-two" />
+            <div className="map-road road-three" />
+            <div className="map-water" />
+            <span className="map-label label-one">Petaling Jaya</span>
+            <span className="map-label label-two">Bandar Sunway</span>
+          </div>
           {status !== 'loading' && (
             <div className="map-key-note">
               {status === 'missing-key' && 'Add a Google Maps API key to enable the live map'}
@@ -122,7 +157,7 @@ const GoogleWeatherMap = forwardRef(function GoogleWeatherMap({ layer }, ref) {
           )}
         </div>
       )}
-      <div className={`weather-wash weather-wash--${layer.toLowerCase()}`} aria-hidden="true" />
+      <div className={`weather-wash weather-wash--${layer.toLowerCase()}`} style={{ '--weather-strength': severity }} aria-hidden="true" />
       <div className="location-dot" aria-hidden="true"><span /></div>
     </div>
   );
