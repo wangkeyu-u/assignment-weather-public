@@ -1,6 +1,7 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import WeatherEffects from './WeatherEffects';
 
 const SUNWAY = { lat: 3.0687, lng: 101.6032 };
 const ROAD_TILES = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -20,11 +21,12 @@ function tileConfig(layer) {
   };
 }
 
-const OpenStreetWeatherMap = forwardRef(function OpenStreetWeatherMap({ layer, severity }, ref) {
+const OpenStreetWeatherMap = forwardRef(function OpenStreetWeatherMap({ layer, severity, onZoneClick }, ref) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const tileLayerRef = useRef(null);
+  const [mapInstance, setMapInstance] = useState(null);
 
   useImperativeHandle(ref, () => ({
     zoomIn: () => mapRef.current?.zoomIn(),
@@ -62,6 +64,7 @@ const OpenStreetWeatherMap = forwardRef(function OpenStreetWeatherMap({ layer, s
       attributionControl: true,
     });
     mapRef.current = map;
+    setMapInstance(map);
 
     const config = tileConfig(layer);
     tileLayerRef.current = L.tileLayer(config.url, {
@@ -82,6 +85,7 @@ const OpenStreetWeatherMap = forwardRef(function OpenStreetWeatherMap({ layer, s
       mapRef.current = null;
       markerRef.current = null;
       tileLayerRef.current = null;
+      setMapInstance(null);
     };
   }, []);
 
@@ -99,6 +103,7 @@ const OpenStreetWeatherMap = forwardRef(function OpenStreetWeatherMap({ layer, s
     <div className="map-canvas-wrap">
       <div ref={containerRef} className="leaflet-map" aria-label="OpenStreetMap centered on Sunway, Selangor" />
       <div className={`weather-wash weather-wash--${layer.toLowerCase()}`} style={{ '--weather-strength': severity }} aria-hidden="true" />
+      <WeatherEffects map={mapInstance} layer={layer} severity={severity} onZoneClick={onZoneClick} />
     </div>
   );
 });
