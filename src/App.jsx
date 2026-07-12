@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import OpenStreetWeatherMap from './OpenStreetWeatherMap';
 import { useButtonSound } from './useButtonSound';
+import { useWeatherSound } from './useWeatherSound';
+import { severityLabel as zoneSeverityLabel } from './WeatherEffects';
 
 const layers = ['Radar', 'Satellite', 'Wind', 'Rainfall'];
 const navItems = [
@@ -55,6 +57,7 @@ export default function App() {
   const mapRef = useRef(null);
   const toastTimerRef = useRef(null);
   const playSound = useButtonSound();
+  const { playWind, playRain, stopAll } = useWeatherSound();
 
   useEffect(() => {
     const timer = window.setInterval(() => setSystemTime(new Date()), 1_000);
@@ -71,6 +74,12 @@ export default function App() {
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), []);
 
+  useEffect(() => () => stopAll(), [stopAll]);
+
+  useEffect(() => {
+    if (!soundEnabled || (activeLayer !== 'Wind' && activeLayer !== 'Rainfall')) stopAll();
+  }, [activeLayer, soundEnabled, stopAll]);
+
   const weatherSeverity = useMemo(() => {
     const variation = Math.sin((timelineOffset / 90) * Math.PI) * 0.16;
     return Math.min(1, Math.max(0.08, layerSeverity[activeLayer] + variation));
@@ -79,11 +88,11 @@ export default function App() {
   const forecastTime = addMinutes(systemTime, timelineOffset);
   const timeLabels = [0, 30, 60, 90].map((offset) => formatWeatherTime(addMinutes(systemTime, offset)));
 
-  const notify = (message) => {
+  const notify = useCallback((message) => {
     window.clearTimeout(toastTimerRef.current);
     setToast(message);
     toastTimerRef.current = window.setTimeout(() => setToast(''), 2200);
-  };
+  }, []);
 
   const clickSound = (tone = 'tap') => {
     if (soundEnabled) playSound(tone, weatherSeverity);
@@ -108,7 +117,8 @@ export default function App() {
     setIsLocating(true);
     clickSound('tap');
     try {
-      await mapRef.current?.locateUser?.();
+      const location = await mapRef.current?.locateUser?.();
+      if (!location) throw new Error('Map is not ready');
       notify('Map centered on your current location');
     } catch {
       mapRef.current?.recenter?.();
@@ -181,11 +191,22 @@ export default function App() {
     setActiveLayer('Radar');
     setTimelineOffset(0);
     setPlaying(false);
+    stopAll();
     closePanels();
     mapRef.current?.recenter?.();
     clickSound('confirm');
     notify('Map reset to live default settings');
   };
+
+  const onZoneClick = useCallback((zone) => {
+    const label = zoneSeverityLabel(zone.sev);
+    if (soundEnabled && activeLayer === 'Wind') {
+      playWind(zone.sev);
+    } else if (soundEnabled) {
+      playRain(zone.sev);
+    }
+    notify(`${activeLayer}: ${label} conditions`);
+  }, [soundEnabled, playWind, playRain, activeLayer, notify]);
 
   return (
     <main className="app-shell">
@@ -216,7 +237,7 @@ export default function App() {
       </header>
 
       <section className="map-section">
-        <OpenStreetWeatherMap ref={mapRef} layer={activeLayer} severity={weatherSeverity} />
+        <OpenStreetWeatherMap ref={mapRef} layer={activeLayer} severity={weatherSeverity} onZoneClick={onZoneClick} />
         <button className="place-chip" aria-busy={isLocating} onClick={locateUser}>
           <Icon name="locate" /><span>{isLocating ? 'Locating…' : <>Sunway,<br/>Selangor</>}</span>
         </button>
@@ -224,6 +245,16 @@ export default function App() {
           <button aria-label="Zoom in" onClick={() => mapAction('zoomIn', 'Map zoomed in')}>+</button>
           <button aria-label="Zoom out" onClick={() => mapAction('zoomOut', 'Map zoomed out')}>−</button>
         </div>
+        {(activeLayer === 'Wind' || activeLayer === 'Rainfall') && (
+          <div className="weather-legend">
+            <span className="legend-label">Light</span>
+            <span className="legend-swatch" style={{ background: 'rgba(60, 180, 75, 0.55)' }} />
+            <span className="legend-swatch" style={{ background: 'rgba(220, 210, 35, 0.60)' }} />
+            <span className="legend-swatch" style={{ background: 'rgba(245, 135, 25, 0.63)' }} />
+            <span className="legend-swatch" style={{ background: 'rgba(225, 45, 45, 0.67)' }} />
+            <span className="legend-label">Severe</span>
+          </div>
+        )}
         <button className="rain-card" style={{ '--severity': weatherSeverity }} onClick={() => { setActivePanel('weather'); setLayerMenuOpen(false); clickSound('confirm'); }}>
           <div className="rain-copy"><span>Rain Intensity <em>{weatherLabel}</em></span><strong>{formatWeatherTime(systemTime)}</strong></div>
           <div className="intensity-bar"><i/><i/><i/><i/><b aria-hidden="true" /></div>
