@@ -245,16 +245,6 @@ export default function App() {
           <button aria-label="Zoom in" onClick={() => mapAction('zoomIn', 'Map zoomed in')}>+</button>
           <button aria-label="Zoom out" onClick={() => mapAction('zoomOut', 'Map zoomed out')}>−</button>
         </div>
-        {(activeLayer === 'Wind' || activeLayer === 'Rainfall') && (
-          <div className="weather-legend">
-            <span className="legend-label">Light</span>
-            <span className="legend-swatch" style={{ background: 'rgba(60, 180, 75, 0.55)' }} />
-            <span className="legend-swatch" style={{ background: 'rgba(220, 210, 35, 0.60)' }} />
-            <span className="legend-swatch" style={{ background: 'rgba(245, 135, 25, 0.63)' }} />
-            <span className="legend-swatch" style={{ background: 'rgba(225, 45, 45, 0.67)' }} />
-            <span className="legend-label">Severe</span>
-          </div>
-        )}
         <button className="rain-card" style={{ '--severity': weatherSeverity }} onClick={() => { setActivePanel('weather'); setLayerMenuOpen(false); clickSound('confirm'); }}>
           <div className="rain-copy"><span>Rain Intensity <em>{weatherLabel}</em></span><strong>{formatWeatherTime(systemTime)}</strong></div>
           <div className="intensity-bar"><i/><i/><i/><i/><b aria-hidden="true" /></div>
