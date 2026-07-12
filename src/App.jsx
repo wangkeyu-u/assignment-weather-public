@@ -43,7 +43,7 @@ function severityLabel(value) {
 export default function App() {
   const [activeLayer, setActiveLayer] = useState('Radar');
   const [activeNav, setActiveNav] = useState('Map');
-  const [timelineOffset, setTimelineOffset] = useState(30);
+  const [timelineOffset, setTimelineOffset] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [activePanel, setActivePanel] = useState(null);
   const [layerMenuOpen, setLayerMenuOpen] = useState(false);
@@ -77,7 +77,7 @@ export default function App() {
   }, [activeLayer, timelineOffset]);
   const weatherLabel = severityLabel(weatherSeverity);
   const forecastTime = addMinutes(systemTime, timelineOffset);
-  const timeLabels = [-30, 0, 30, 60].map((offset) => formatWeatherTime(addMinutes(systemTime, offset)));
+  const timeLabels = [0, 30, 60, 90].map((offset) => formatWeatherTime(addMinutes(systemTime, offset)));
 
   const notify = (message) => {
     window.clearTimeout(toastTimerRef.current);
@@ -179,7 +179,7 @@ export default function App() {
 
   const resetMap = () => {
     setActiveLayer('Radar');
-    setTimelineOffset(30);
+    setTimelineOffset(0);
     setPlaying(false);
     closePanels();
     mapRef.current?.recenter?.();
@@ -225,7 +225,7 @@ export default function App() {
           <button aria-label="Zoom out" onClick={() => mapAction('zoomOut', 'Map zoomed out')}>−</button>
         </div>
         <button className="rain-card" style={{ '--severity': weatherSeverity }} onClick={() => { setActivePanel('weather'); setLayerMenuOpen(false); clickSound('confirm'); }}>
-          <div className="rain-copy"><span>Rain Intensity <em>{weatherLabel}</em></span><strong>{formatWeatherTime(forecastTime)}</strong></div>
+          <div className="rain-copy"><span>Rain Intensity <em>{weatherLabel}</em></span><strong>{formatWeatherTime(systemTime)}</strong></div>
           <div className="intensity-bar"><i/><i/><i/><i/><b aria-hidden="true" /></div>
           <div className="intensity-labels"><span>Light</span><span>Heavy</span></div>
         </button>
