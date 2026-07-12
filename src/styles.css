@@ -81,7 +81,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 .zoom-controls button { width: 55px; height: 55px; border: 0; background: var(--surface); font-size: 29px; line-height: 1; cursor: pointer; transition: background .15s, transform .12s; }
 .zoom-controls button:first-child { border-radius: 13px 13px 4px 4px; }.zoom-controls button:last-child { border-radius: 4px 4px 13px 13px; }
 .zoom-controls button:active { background: #edf5f0; transform: scale(.94); }
-.rain-card { position: absolute; z-index: 5; left: 25px; bottom: 27px; width: 420px; max-width: calc(100% - 150px); height: 97px; padding: 16px 19px 12px; border: 1px solid #e5e7e9; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); text-align: left; cursor: pointer; transition: transform .16s, box-shadow .16s; }
+.rain-card { position: absolute; z-index: 5; left: 25px; bottom: 195px; width: 420px; max-width: calc(100% - 150px); height: 97px; padding: 16px 19px 12px; border: 1px solid #e5e7e9; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); text-align: left; cursor: pointer; transition: transform .16s, box-shadow .16s; }
 .rain-card:active { transform: scale(.985); box-shadow: 0 5px 16px rgba(30,58,70,.13); }
 .rain-copy { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 16px; }
 .rain-copy em { display: block; margin-top: 1px; color: var(--green); font-size: 11px; font-style: normal; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; }
@@ -96,7 +96,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
   z-index: 6;
   left: 29px;
   right: 29px;
-  bottom: 132px;
+  bottom: 275px;
   display: flex;
   align-items: center;
   justify-content: center;
